@@ -1,3 +1,6 @@
 [submodule "cc65"]
 	path = cc65
 	url = https://github.com/cc65/cc65
+[submodule "mkd64"]
+	path = mkd64
+	url = https://github.com/Zirias/c64_tool_mkd64.git
