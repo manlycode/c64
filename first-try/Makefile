@@ -1,50 +1,51 @@
-TARGETS = main test
-EXECUTABLES = main.nes test.nes
+TARGETS = main
+EXECUTABLES = main.prg
 TOOLSDIR := /usr/local/bin
 AS := $(TOOLSDIR)/ca65
 LD := $(TOOLSDIR)/ld65
-ASFLAGS := -g
-LDFLAGS := -Ln $(LABELSNAME)
+CL := $(TOOLSDIR)/cl65
+LIB_PATH := /usr/local/Cellar/cc65/2.18/share/cc65/lib
+INC_PATH := /usr/local/Cellar/cc65/2.18/share/cc65/asminc
+CFG_PATH := /usr/local/Cellar/cc65/2.18/share/cc65/cfg
+ASFLAGS := -g -t c64
+LDFLAGS := -t c64
 LABELS_POSTFIX := labels.txt
-CONFIGNAME := ../cc65/cfg/c64-asm.cfg
+VICETOOLS := $(HOME)/bin/vice/tools
+C1541 := $(VICETOOLS)/c1541
+VICE := $(HOME)/bin/vice/tools/x64
 
 SRCDIR := src
+BINDIR := bin
 LIST_POSTFIX := listing.txt
 MAP_POSTFIX := map.txt
-
-TEMPDIR := $(shell mktemp -d)
 
 # ---------------------------------------------------------------
 # Build Tasks
 # ---------------------------------------------------------------
 .PHONY: all
-all: test.nes main.nes
+all: main.prg
 
 .PHONY: clean
 clean:
-	rm -f *.listing.txt *.map.txt *.o *.nes *.wch *.csv
+	-rm -rf bin/*
+	-rm -rf release/*
+	-rm -rf src/*.o
 
 bin:
 	mkdir bin
 
-%.o: $(SRCDIR)/%.asm $(SRCDIR)/*.s $(SRCDIR)/tests/*.s
-	$(AS) $< $(ASFLAGS) -v -I $(SRCDIR) -l $*.$(LIST_POSTFIX) -o $@ --feature force_range
+release:
+	mkdir release
 
-%.nes: %.o
-	$(LD) -Ln $*.$(LABELS_POSTFIX) -C $(CONFIGNAME) -o $@ -m $*.$(MAP_POSTFIX) -vm $<
-	python3 script/labels_to_nintaco.py $*
+release/first-try.d64: bin/main.prg release
+	$(C1541) \
+    -format firsttry,id d64 $@\
+    -attach $@ \
+    -write bin/main.prg main
 
-.PHONY: test
-test: test.nes
-	PYTHONPATH=script python script/run_rom/run_rom.py $< &
 
-.PHONY: main
-main: main.nes
-	PYTHONPATH=script python script/run_rom/run_rom.py $< &
+bin/%.prg: $(SRCDIR)/%.asm
+	$(CL) -o $@ --cfg-path $(CFG_PATH) --asm-include-dir $(INC_PATH) --lib c64.lib -L $(LIB_PATH) -u __EXEHDR__ -t c64 -C c64-asm.cfg $^
 
-.PHONY: bootstrap
-bootstrap: tools/fceux/fceux.exe tools/nesst/nesst.exe
-
-.PHONY: clean-tools
-clean-tools:
-	rm -rf tools
+%: release/%.d64
+	$(VICE) $<

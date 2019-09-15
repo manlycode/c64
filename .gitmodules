@@ -4,3 +4,9 @@
 [submodule "mkd64"]
 	path = mkd64
 	url = https://github.com/Zirias/c64_tool_mkd64.git
+[submodule "first-try/elite-harmless"]
+	path = first-try/elite-harmless
+	url = https://github.com/Kroc/elite-harmless
+[submodule "elite-harmless"]
+	path = elite-harmless
+	url = https://github.com/Kroc/elite-harmless
