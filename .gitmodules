@@ -10,3 +10,6 @@
 [submodule "elite-harmless"]
 	path = elite-harmless
 	url = https://github.com/Kroc/elite-harmless
+[submodule "first-try/vendor/cc65"]
+	path = first-try/vendor/cc65
+	url = https://github.com/cc65/cc65

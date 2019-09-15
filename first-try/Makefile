@@ -1,12 +1,13 @@
 TARGETS = main
 EXECUTABLES = main.prg
-TOOLSDIR := /usr/local/bin
+CC65_DIR := vendor/cc65
+TOOLSDIR := $(CC65_DIR)/bin
 AS := $(TOOLSDIR)/ca65
 LD := $(TOOLSDIR)/ld65
 CL := $(TOOLSDIR)/cl65
-LIB_PATH := /usr/local/Cellar/cc65/2.18/share/cc65/lib
-INC_PATH := /usr/local/Cellar/cc65/2.18/share/cc65/asminc
-CFG_PATH := /usr/local/Cellar/cc65/2.18/share/cc65/cfg
+LIB_PATH := $(CC65_DIR)/lib
+INC_PATH := $(CC65_DIR)/asminc
+CFG_PATH := $(CC65_DIR)/cfg
 ASFLAGS := -g -t c64
 LDFLAGS := -t c64
 LABELS_POSTFIX := labels.txt
@@ -22,6 +23,7 @@ MAP_POSTFIX := map.txt
 # ---------------------------------------------------------------
 # Build Tasks
 # ---------------------------------------------------------------
+
 .PHONY: all
 all: main.prg
 
@@ -30,6 +32,14 @@ clean:
 	-rm -rf bin/*
 	-rm -rf release/*
 	-rm -rf src/*.o
+
+vendor/cc65:
+	git submodule init
+
+vendor/cc65/lib/c64.lib: vendor/cc65
+	cd $< && make
+
+
 
 bin:
 	mkdir bin
@@ -45,7 +55,15 @@ release/first-try.d64: bin/main.prg release
 
 
 bin/%.prg: $(SRCDIR)/%.asm
-	$(CL) -o $@ --cfg-path $(CFG_PATH) --asm-include-dir $(INC_PATH) --lib c64.lib -L $(LIB_PATH) -u __EXEHDR__ -t c64 -C c64-asm.cfg $^
+	$(CL) \
+    -o $@ \
+    --cfg-path $(CFG_PATH) \
+    --asm-include-dir $(INC_PATH) \
+    --lib c64.lib \
+    -L $(LIB_PATH) \
+    -u __EXEHDR__ \
+    -t c64 \
+    -C c64-asm.cfg $^
 
 %: release/%.d64
 	$(VICE) $<
