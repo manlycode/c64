@@ -12,3 +12,5 @@ git submodule update --init
 * http://spritemate.com
 * https://github.com/Viza74/c64helperscriptsforaseprite
 * http://www.sidmusic.org/goattracker/mac/
+* https://sourceforge.net/projects/c64-debugger/files/latest/download
+* https://github.com/sunsided/c64-debugger

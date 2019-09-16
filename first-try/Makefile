@@ -7,6 +7,7 @@ LD := $(TOOLSDIR)/ld65
 CL := $(TOOLSDIR)/cl65
 LIB_PATH := $(CC65_DIR)/lib
 INC_PATH := $(CC65_DIR)/asminc
+INC_LIB_PATH := $(CC65_DIR)/libsrc
 CFG_PATH := $(CC65_DIR)/cfg
 ASFLAGS := -g -t c64
 LDFLAGS := -t c64
@@ -25,7 +26,7 @@ MAP_POSTFIX := map.txt
 # ---------------------------------------------------------------
 
 .PHONY: all
-all: main.prg
+all: clean first-try
 
 .PHONY: clean
 clean:
@@ -38,7 +39,6 @@ vendor/cc65:
 
 vendor/cc65/lib/c64.lib: vendor/cc65
 	cd $< && make
-
 
 
 bin:
@@ -59,11 +59,21 @@ bin/%.prg: $(SRCDIR)/%.asm
     -o $@ \
     --cfg-path $(CFG_PATH) \
     --asm-include-dir $(INC_PATH) \
+    --asm-include-dir $(INC_LIB_PATH) \
     --lib c64.lib \
+    -Ln main.sym \
+    -m main.map \
     -L $(LIB_PATH) \
     -u __EXEHDR__ \
     -t c64 \
     -C c64-asm.cfg $^
 
-%: release/%.d64
-	$(VICE) $<
+# %: release/%.d64
+# 	$(VICE) \
+#     $<
+
+# %: bin/%.prg
+# 	/Applications/VirtualC64.app/Contents/MacOS/VirtualC64 $<
+
+%: bin/%.prg
+	/Applications/C64Debugger.app/Contents/MacOS/C64Debugger bin/main.prg
