@@ -1,5 +1,5 @@
-TARGETS = main
-EXECUTABLES = main.prg
+TARGETS = first-try
+EXECUTABLES = first-try.prg
 CC65_DIR := vendor/cc65
 TOOLSDIR := $(CC65_DIR)/bin
 AS := $(TOOLSDIR)/ca65
@@ -47,11 +47,11 @@ bin:
 release:
 	mkdir release
 
-release/first-try.d64: bin/main.prg release
+release/%.d64: bin/%.prg release
 	$(C1541) \
     -format firsttry,id d64 $@\
     -attach $@ \
-    -write bin/main.prg main
+    -write bin/first-try.prg first-try
 
 
 bin/%.prg: $(SRCDIR)/%.asm
@@ -61,8 +61,8 @@ bin/%.prg: $(SRCDIR)/%.asm
     --asm-include-dir $(INC_PATH) \
     --asm-include-dir $(INC_LIB_PATH) \
     --lib c64.lib \
-    -Ln main.sym \
-    -m main.map \
+    -Ln first-try.sym \
+    -m first-try.map \
     -L $(LIB_PATH) \
     -u __EXEHDR__ \
     -t c64 \
@@ -75,5 +75,5 @@ bin/%.prg: $(SRCDIR)/%.asm
 # %: bin/%.prg
 # 	/Applications/VirtualC64.app/Contents/MacOS/VirtualC64 $<
 
-%: bin/%.prg
-	/Applications/C64Debugger.app/Contents/MacOS/C64Debugger bin/main.prg
+%: release/%.d64
+	/Applications/C64Debugger.app/Contents/MacOS/C64Debugger -pass -autorundisk -d64 $< 
