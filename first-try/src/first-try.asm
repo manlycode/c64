@@ -4,6 +4,7 @@
 .include "colors.inc"                      ; c64 constants
 .include "c64/clrscr.s"
 .include "cbm.mac"
+.include "vic.inc"
 
 ; 1000 possible location on the c64 screen
 ;       - starts at location $0400
@@ -27,12 +28,54 @@ yPos:       .byte yPos, 0
 .CODE
 
 mainLoop:
+        sei
         jsr CLRSCR
+        jsr initScreen
+        jsr initText
 
-init_screen:
-        ldx #$05
-        stx $d021
-        stx $d020
+        ldy #%01111111 ; Bit 7 = 0 (clear all other bits according to mask)
+        sty CIA1_ICR    ; Turn off CIA interrupts
+        sty CIA2_ICR
+        lda CIA1_ICR    ; cancel all cia irqs
+        lda CIA2_ICR
+
+        lda #$01        ; set interrupt mask for Vic-II
+        sta VIC_IMR     ; IRQ by raster beam
+
+
+                        ; Point IRQ vector to custom irq routine
+        lda #<irq
+        ldx #>irq
+        sta IRQVec
+        stx IRQVec+1
+
+        lda #$00        ; trigger first interrupt at row zero
+        sta VIC_HLINE
+
+        lda VIC_CTRL1   ; Bit#0 of VIC_CTRL1 is basically
+        and #%01111111  ; the 9th bit for VIC_HILINE
+        sta VIC_CTRL1   ; we need to make sure it's set to zero
+
+        cli
+        jmp *
+
+irq:
+        inc xPos
+        dec VIC_IRR     ; Acknowledge IRQ
+        jsr colorwash
+        jsr play_music
+        jmp $ea81       ; jump back to kernel interrupt routine
+
+colorwash:
+        rts
+
+play_music:
+        rts
+
+initScreen:
+        ldx #$00
+        stx VIC+Vic::bgColor0
+        stx VIC+Vic::borderColor
 
 blackScreen:
         lda #$20        ; $20 is the space character
@@ -48,6 +91,7 @@ blackScreen:
         sta $dae8,x
         inx
         bne blackScreen
+        rts
 
 initText:
         ldx #$00
