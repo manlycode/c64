@@ -67,7 +67,35 @@ irq:
         jmp $ea81       ; jump back to kernel interrupt routine
 
 colorwash:
+        ldx #$27
+        lda color+39
+cycle1:
+        ldy color-1,x
+        sta color-1,x
+        sta $d990,x     ;put current color into color ram
+        tya
+        dex
+        bne cycle1      ; is x zero?
+        sta color+39
+        sta $d990
+
+colwash2:
+        ldx #$00
+        lda color2+39
+
+cycle2:
+        ldy color2,x
+        sta color2,x
+        sta $d9e0,x
+        tya
+        inx
+        cpx #$26
+        bne cycle2
+        sta color2+39
+        sta $d9e0+40
+
         rts
+
 
 play_music:
         rts
@@ -108,3 +136,22 @@ initTextLoop:
 .DATA
 line1:  scrcode "           hello                        "
 line2:  scrcode "           hello                        "
+color:
+        .byte $09,$09,$02,$02,$08 
+        .byte $08,$0a,$0a,$0f,$0f 
+        .byte $07,$07,$01,$01,$01 
+        .byte $01,$01,$01,$01,$01 
+        .byte $01,$01,$01,$01,$01 
+        .byte $01,$01,$01,$07,$07 
+        .byte $0f,$0f,$0a,$0a,$08 
+        .byte $08,$02,$02,$09,$09 
+
+color2:
+        .byte $09,$09,$02,$02,$08 
+        .byte $08,$0a,$0a,$0f,$0f 
+        .byte $07,$07,$01,$01,$01 
+        .byte $01,$01,$01,$01,$01 
+        .byte $01,$01,$01,$01,$01 
+        .byte $01,$01,$01,$07,$07 
+        .byte $0f,$0f,$0a,$0a,$08 
+        .byte $08,$02,$02,$09,$09 
