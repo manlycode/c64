@@ -57,7 +57,6 @@ release/%.d64: bin/%.prg release
 bin/%.prg: $(SRCDIR)/%.asm
 	$(CL) \
     -o $@ \
-    --cfg-path $(CFG_PATH) \
     --asm-include-dir $(INC_PATH) \
     --asm-include-dir $(INC_LIB_PATH) \
     --lib c64.lib \
@@ -66,7 +65,7 @@ bin/%.prg: $(SRCDIR)/%.asm
     -L $(LIB_PATH) \
     -u __EXEHDR__ \
     -t c64 \
-    -C c64-asm.cfg $^
+    -C ./c64-asm.cfg $^
 
 # %: release/%.d64
 # 	$(VICE) \

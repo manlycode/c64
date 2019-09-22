@@ -12,6 +12,8 @@ SCREEN_MEMORY := $0400
 
 ; Color memory $D800
 COLOR_MEMORY := $D800
+SID_INIT := music
+SID_PLAY := music+6
 
 ; VIC-II can only see 16k at a time
 ; so there's a BANK_SELECT register
@@ -26,12 +28,12 @@ yPos:       .byte yPos, 0
 
 
 .CODE
-
 mainLoop:
         sei
         jsr CLRSCR
         jsr initScreen
         jsr initText
+        ; jsr SID_INIT
 
         ldy #%01111111 ; Bit 7 = 0 (clear all other bits according to mask)
         sty CIA1_ICR    ; Turn off CIA interrupts
@@ -98,6 +100,7 @@ cycle2:
 
 
 play_music:
+        ; jsr SID_PLAY
         rts
 
 initScreen:
@@ -133,25 +136,31 @@ initTextLoop:
         bne initTextLoop
         rts
 
+
 .DATA
+music:
+        .incbin "../resources/jeff_donald.sid", $7c
+
 line1:  scrcode "           hello                        "
 line2:  scrcode "           hello                        "
 color:
-        .byte $09,$09,$02,$02,$08 
-        .byte $08,$0a,$0a,$0f,$0f 
-        .byte $07,$07,$01,$01,$01 
-        .byte $01,$01,$01,$01,$01 
-        .byte $01,$01,$01,$01,$01 
-        .byte $01,$01,$01,$07,$07 
-        .byte $0f,$0f,$0a,$0a,$08 
-        .byte $08,$02,$02,$09,$09 
+        .byte $09,$09,$02,$02,$08
+        .byte $08,$0a,$0a,$0f,$0f
+        .byte $07,$07,$01,$01,$01
+        .byte $01,$01,$01,$01,$01
+        .byte $01,$01,$01,$01,$01
+        .byte $01,$01,$01,$07,$07
+        .byte $0f,$0f,$0a,$0a,$08
+        .byte $08,$02,$02,$09,$09
 
 color2:
-        .byte $09,$09,$02,$02,$08 
-        .byte $08,$0a,$0a,$0f,$0f 
-        .byte $07,$07,$01,$01,$01 
-        .byte $01,$01,$01,$01,$01 
-        .byte $01,$01,$01,$01,$01 
-        .byte $01,$01,$01,$07,$07 
-        .byte $0f,$0f,$0a,$0a,$08 
-        .byte $08,$02,$02,$09,$09 
+        .byte $09,$09,$02,$02,$08
+        .byte $08,$0a,$0a,$0f,$0f
+        .byte $07,$07,$01,$01,$01
+        .byte $01,$01,$01,$01,$01
+        .byte $01,$01,$01,$01,$01
+        .byte $01,$01,$01,$07,$07
+        .byte $0f,$0f,$0a,$0a,$08
+        .byte $08,$02,$02,$09,$09
+
+
