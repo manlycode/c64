@@ -23,17 +23,14 @@ SID_PLAY := music+6
 
 
 .ZEROPAGE
-xPos:       .byte 0
-yPos:       .byte 0
 
 
 .CODE
 mainLoop:
         sei
-        jsr CLRSCR
         jsr initScreen
         jsr initText
-        ; jsr SID_INIT
+        jsr SID_INIT
 
         ldy #%01111111 ; Bit 7 = 0 (clear all other bits according to mask)
         sty CIA1_ICR    ; Turn off CIA interrupts
@@ -62,10 +59,9 @@ mainLoop:
         jmp *
 
 irq:
-        inc xPos
         dec VIC_IRR     ; Acknowledge IRQ
         jsr colorwash
-        ; jsr play_music
+        jsr play_music
         jmp $ea81       ; jump back to kernel interrupt routine
 
 colorwash:
@@ -98,9 +94,8 @@ cycle2:
 
         rts
 
-
 play_music:
-        ; jsr SID_PLAY
+        jsr SID_PLAY
         rts
 
 initScreen:
@@ -136,6 +131,10 @@ initTextLoop:
         bne initTextLoop
         rts
 
+.segment "SIDDATA"
+music: .incbin "jeff_donald.sid", $7e
+
+.DATA
 line1:  scrcode "           hello                        "
 line2:  scrcode "           hello                        "
 color:
@@ -157,8 +156,4 @@ color2:
         .byte $01,$01,$01,$07,$07
         .byte $0f,$0f,$0a,$0a,$08
         .byte $08,$02,$02,$09,$09
-
-.segment "SIDDATA"
-music:
-        .incbin "../resources/jeff_donald.sid", $7e
 

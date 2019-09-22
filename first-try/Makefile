@@ -8,7 +8,8 @@ CL := $(TOOLSDIR)/cl65
 LIB_PATH := $(CC65_DIR)/lib
 INC_PATH := $(CC65_DIR)/asminc
 INC_LIB_PATH := $(CC65_DIR)/libsrc
-CFG_PATH := $(CC65_DIR)/cfg
+# CFG_PATH := $(CC65_DIR)/cfg
+CFG_PATH := ./
 ASFLAGS := -g -t c64
 LDFLAGS := -t c64
 LABELS_POSTFIX := labels.txt
@@ -58,7 +59,9 @@ bin/%.prg: $(SRCDIR)/%.asm
 	$(CL) \
     -o $@ \
     --asm-include-dir $(INC_PATH) \
+    --cfg-path $(CFG_PATH) \
     --asm-include-dir $(INC_LIB_PATH) \
+    --bin-include-dir ./resources \
     --lib c64.lib \
     -Ln first-try.sym \
     -m first-try.map \
