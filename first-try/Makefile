@@ -61,7 +61,6 @@ bin/%.prg: $(SRCDIR)/%.asm
     --asm-include-dir $(INC_PATH) \
     --cfg-path $(CFG_PATH) \
     --asm-include-dir $(INC_LIB_PATH) \
-    --bin-include-dir ./resources \
     --lib c64.lib \
     -Ln first-try.sym \
     -m first-try.map \

@@ -8,7 +8,7 @@
 
 ; 1000 possible location on the c64 screen
 ;       - starts at location $0400
-SCREEN_MEMORY := $0400
+SCREEN_RAM := $0400
 
 ; Color memory $D800
 COLOR_MEMORY := $D800
@@ -23,7 +23,11 @@ SID_PLAY := music+6
 
 
 .ZEROPAGE
-
+delay_counter:
+        .byte 0
+delay_animation_pointer:
+        .byte 0
+        .byte 0
 
 .CODE
 mainLoop:
@@ -31,6 +35,12 @@ mainLoop:
         jsr initScreen
         jsr initText
         jsr SID_INIT
+        .include "config_sprites.asm"
+
+        lda #$00
+        sta delay_animation_pointer
+        lda #$01
+        sta delay_counter
 
         ldy #%01111111 ; Bit 7 = 0 (clear all other bits according to mask)
         sty CIA1_ICR    ; Turn off CIA interrupts
@@ -62,6 +72,29 @@ irq:
         dec VIC_IRR     ; Acknowledge IRQ
         jsr colorwash
         jsr play_music
+        jsr update_ship
+        jsr check_keyboard
+
+        ; Open top and bottom borders
+        lda #$00        ; clean garbage in $3ff
+        sta $3fff
+
+:       lda #$f9        ; wait for scanline 249
+        cmp $d012        
+        bne :-
+
+        lda $d011       ; trick the VIC and open the border
+        and #$f7
+        sta $d011
+
+:       lda #$ff        ; wait for scanline 255
+        cmp $d012        
+        bne :-
+
+        lda $d011       ; Reset bit 3 for next refresh
+        ora #$08
+        sta $d011
+
         jmp $ea81       ; jump back to kernel interrupt routine
 
 colorwash:
@@ -98,6 +131,12 @@ play_music:
         jsr SID_PLAY
         rts
 
+update_ship:
+        rts
+
+check_keyboard:
+        rts
+
 initScreen:
         ldx #$00
         stx VIC+Vic::bgColor0
@@ -105,7 +144,7 @@ initScreen:
 
 blackScreen:
         lda #$20        ; $20 is the space character
-        sta $0400,x     ; fill four areas w/ spacebar chars
+        sta SCREEN_RAM,x     ; fill four areas w/ spacebar chars
         sta $0500,x
         sta $0600,x
         sta $06e8,x
@@ -131,11 +170,7 @@ initTextLoop:
         bne initTextLoop
         rts
 
-.segment "SIDDATA"
-music: .incbin "jeff_donald.sid", $7e
-
-.DATA
-line1:  scrcode "           hello                        "
+line1:  scrcode "           hello     1234               "
 line2:  scrcode "           hello                        "
 color:
         .byte $09,$09,$02,$02,$08
@@ -157,3 +192,16 @@ color2:
         .byte $0f,$0f,$0a,$0a,$08
         .byte $08,$02,$02,$09,$09
 
+
+.segment "SIDDATA"
+music: 
+        .incbin "../resources/jeff_donald.sid", $7e
+
+.segment "SPRITEDATA"
+sprites:
+        .incbin "../resources/sprites.spr", 3,1024
+
+.segment "CHARDATA"
+        .incbin "../resources/rambo_font.ctm",24,384
+.DATA
+        .byte $ED, $Ed, $ED, $ED
