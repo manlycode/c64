@@ -23,8 +23,8 @@ SID_PLAY := music+6
 
 
 .ZEROPAGE
-xPos:       .byte xPos, 0
-yPos:       .byte yPos, 0
+xPos:       .byte 0
+yPos:       .byte 0
 
 
 .CODE
@@ -65,7 +65,7 @@ irq:
         inc xPos
         dec VIC_IRR     ; Acknowledge IRQ
         jsr colorwash
-        jsr play_music
+        ; jsr play_music
         jmp $ea81       ; jump back to kernel interrupt routine
 
 colorwash:
@@ -136,11 +136,6 @@ initTextLoop:
         bne initTextLoop
         rts
 
-
-.DATA
-music:
-        .incbin "../resources/jeff_donald.sid", $7c
-
 line1:  scrcode "           hello                        "
 line2:  scrcode "           hello                        "
 color:
@@ -163,4 +158,7 @@ color2:
         .byte $0f,$0f,$0a,$0a,$08
         .byte $08,$02,$02,$09,$09
 
+.segment "SIDDATA"
+music:
+        .incbin "../resources/jeff_donald.sid", $7e
 
