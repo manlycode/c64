@@ -23,17 +23,25 @@ SID_PLAY := music+6
 
 
 .ZEROPAGE
-delay_counter:
-        .byte 0
+delay_counter:          .byte 0
 delay_animation_pointer:
         .byte 0
         .byte 0
-animation_frame:
-        .byte 16
+animation_frame:        .byte 16
+raster_bar_start:       .byte 1
+raster_bar_next:       .byte 1
+raster_bar_direction:  .byte 0
 
 .CODE
 mainLoop:
         sei
+        lda #60
+        sta raster_bar_start
+        sta raster_bar_next
+
+        lda #0
+        sta raster_bar_direction
+
         jsr initScreen
         jsr initText
         jsr SID_INIT
@@ -52,7 +60,6 @@ mainLoop:
 
         lda #$01        ; set interrupt mask for Vic-II
         sta VIC_IMR     ; IRQ by raster beam
-
 
                         ; Point IRQ vector to custom irq routine
         lda #<irq
@@ -81,6 +88,94 @@ irq:
         lda #$00        ; clean garbage in $3ff
         sta $3fff
 
+        
+start_raster_bars:
+        ldx #0
+        stx VIC_BG_COLOR0
+
+        lda raster_bar_start
+        ldx raster_bar_next
+
+        ldx #6
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+
+        adc #1
+        ldx #12
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+
+        adc #2
+        ldx #15
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+
+        adc #4
+        ldx #3
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+
+        adc #8
+        ldx #1
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+
+        adc #16
+        ldx #3
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+
+        adc #8
+        ldx #15
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+
+        adc #4
+        ldx #12
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+
+        adc #2
+        ldx #6
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+
+        adc #1
+        ldx #0
+:       cmp VIC_HLINE
+        bne :-
+        stx VIC_BG_COLOR0
+        stx raster_bar_next
+
+end_raster_bars:
+        lda raster_bar_direction
+        bne :+
+        inc raster_bar_start
+        jmp :++
+:       dec raster_bar_start
+        
+:       lda raster_bar_start
+        cmp #60
+        bne :+
+        lda raster_bar_direction
+        eor %00000001
+        sta raster_bar_direction
+
+:       cmp #150
+        bne :+
+        lda raster_bar_direction
+        eor %00000001
+        sta raster_bar_direction
+
 :       lda #$f9        ; wait for scanline 249
         cmp VIC_HLINE        
         bne :-
@@ -98,6 +193,9 @@ irq:
         sta VIC_CTRL1
 
         jmp $ea81       ; jump back to kernel interrupt routine
+
+change_raster_direction: 
+        rts
 
 colorwash:
         ldx #$27
