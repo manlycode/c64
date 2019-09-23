@@ -3,7 +3,7 @@
 sprite_ship_current_frame:
         .byte 0
 sprite_frames_ship = 16
-sprite_pointer_ship = $80
+sprite_pointer_ship = $82
 sprite_bg_color = $00
 sprite_multicolor_1 = $0b
 sprite_multicolor_2 = $01
@@ -18,6 +18,7 @@ sprite_shipcolor = $02
         sta sprite_ship_current_frame
 
         lda #sprite_pointer_ship
+        sta animation_frame
         sta SCREEN_RAM+$3f8
 
 ; -----------

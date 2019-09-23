@@ -9,7 +9,7 @@
 ; 1000 possible location on the c64 screen
 ;       - starts at location $0400
 SCREEN_RAM := $0400
-
+PTR_SPR0 := SCREEN_RAM+$3f8
 ; Color memory $D800
 COLOR_MEMORY := $D800
 SID_INIT := music
@@ -28,6 +28,8 @@ delay_counter:
 delay_animation_pointer:
         .byte 0
         .byte 0
+animation_frame:
+        .byte 16
 
 .CODE
 mainLoop:
@@ -80,20 +82,20 @@ irq:
         sta $3fff
 
 :       lda #$f9        ; wait for scanline 249
-        cmp $d012        
+        cmp VIC_HLINE        
         bne :-
 
-        lda $d011       ; trick the VIC and open the border
+        lda VIC_CTRL1       ; trick the VIC and open the border
         and #$f7
-        sta $d011
+        sta VIC_CTRL1
 
 :       lda #$ff        ; wait for scanline 255
-        cmp $d012        
+        cmp VIC_HLINE        
         bne :-
 
-        lda $d011       ; Reset bit 3 for next refresh
+        lda VIC_CTRL1       ; Reset bit 3 for next refresh
         ora #$08
-        sta $d011
+        sta VIC_CTRL1
 
         jmp $ea81       ; jump back to kernel interrupt routine
 
@@ -132,6 +134,34 @@ play_music:
         rts
 
 update_ship:
+        dec VIC_SPR0_X
+        bne animate_ship
+
+        lda $d010       ; handle the hi bit
+        eor #$01
+        sta $d010
+
+animate_ship:
+        lda delay_animation_pointer
+        eor #$01
+        sta delay_animation_pointer
+        beq delay_animation
+
+        lda animation_frame
+        bne dec_ship_frame
+
+reset_ship_frames:
+        lda #14
+        sta animation_frame
+        lda #sprite_pointer_ship
+        sta PTR_SPR0
+
+dec_ship_frame:
+        inc PTR_SPR0
+        dec animation_frame
+        beq reset_ship_frames
+
+delay_animation:
         rts
 
 check_keyboard:
