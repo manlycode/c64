@@ -31,13 +31,16 @@ animation_frame:        .byte 16
 raster_bar_start:       .byte 1
 raster_bar_next:       .byte 1
 raster_bar_direction:  .byte 0
-
+raster_bar_color_ptr: .byte 0
 .CODE
 mainLoop:
         sei
         lda #60
         sta raster_bar_start
         sta raster_bar_next
+
+        ; lda #rasterBarColors
+        ; sta raster_bar_color_ptr
 
         lda #0
         sta raster_bar_direction
@@ -94,65 +97,64 @@ start_raster_bars:
         stx VIC_BG_COLOR0
 
         lda raster_bar_start
-        ldx raster_bar_next
-
-        ldx #6
+        ldx rasterBarColors
 :       cmp VIC_HLINE
         bne :-
         stx VIC_BG_COLOR0
+        adc rasterBarWidths
 
-        adc #1
-        ldx #12
+:       cmp VIC_HLINE
+        bne :-
+        ldx rasterBarColors+1
+        stx VIC_BG_COLOR0
+        adc rasterBarWidths+1
+
+:       cmp VIC_HLINE
+        bne :-
+        ldx rasterBarColors+2
+        stx VIC_BG_COLOR0
+        adc rasterBarWidths+2
+
+:       cmp VIC_HLINE
+        bne :-
+        ldx rasterBarColors+3
+        stx VIC_BG_COLOR0
+        adc rasterBarWidths+3
+
 :       cmp VIC_HLINE
         bne :-
         stx VIC_BG_COLOR0
+        ldx rasterBarColors+4
+        adc rasterBarWidths+4
 
-        adc #2
-        ldx #15
 :       cmp VIC_HLINE
         bne :-
+        ldx rasterBarColors+3
         stx VIC_BG_COLOR0
+        adc rasterBarWidths+3
 
-        adc #4
-        ldx #3
 :       cmp VIC_HLINE
         bne :-
+        ldx rasterBarColors+2
         stx VIC_BG_COLOR0
+        adc rasterBarWidths+2
 
-        adc #8
-        ldx #1
 :       cmp VIC_HLINE
         bne :-
+        ldx rasterBarColors+1
         stx VIC_BG_COLOR0
+        adc rasterBarWidths+1
 
-        adc #16
-        ldx #3
 :       cmp VIC_HLINE
         bne :-
+        ldx rasterBarColors
         stx VIC_BG_COLOR0
+        adc rasterBarWidths
 
-        adc #8
-        ldx #15
-:       cmp VIC_HLINE
-        bne :-
-        stx VIC_BG_COLOR0
-
-        adc #4
-        ldx #12
-:       cmp VIC_HLINE
-        bne :-
-        stx VIC_BG_COLOR0
-
-        adc #2
-        ldx #6
-:       cmp VIC_HLINE
-        bne :-
-        stx VIC_BG_COLOR0
-
-        adc #1
         ldx #0
 :       cmp VIC_HLINE
         bne :-
+
         stx VIC_BG_COLOR0
         stx raster_bar_next
 
@@ -194,8 +196,16 @@ end_raster_bars:
 
         jmp $ea81       ; jump back to kernel interrupt routine
 
-change_raster_direction: 
-        rts
+; swapColors:
+;         lda #raster_bar_color_ptr
+;         cmp rasterBarColors
+;         bne :+
+; :       lda #rasterBarColors2
+;         sta raster_bar_color_ptr
+;         jmp :++
+; :       lda #rasterBarColors
+;         sta raster_bar_color_ptr
+; :       rts
 
 colorwash:
         ldx #$27
@@ -298,8 +308,9 @@ initTextLoop:
         bne initTextLoop
         rts
 
-line1:  scrcode "           hello     1234               "
-line2:  scrcode "           hello                        "
+;line1:  scrcode "           hello     1234               "
+line1:   scrcode "             cracked by                  "
+line2:   scrcode "             manlyco.de                  "
 color:
         .byte $09,$09,$02,$02,$08
         .byte $08,$0a,$0a,$0f,$0f
@@ -319,6 +330,15 @@ color2:
         .byte $01,$01,$01,$07,$07
         .byte $0f,$0f,$0a,$0a,$08
         .byte $08,$02,$02,$09,$09
+
+
+rasterBarWidths:
+        .byte 1,2,3,8,16
+rasterBarColors:
+        .byte 11,7,13,3,14
+rasterBarColors2:
+        .byte 1,7,13,3,14
+
 
 
 .segment "SIDDATA"

@@ -27,13 +27,10 @@ MAP_POSTFIX := map.txt
 # ---------------------------------------------------------------
 
 .PHONY: all
-all: clean first-try
+all: first-try
 
-.PHONY: clean
-clean:
-	-rm -rf bin/*
-	-rm -rf release/*
-	-rm -rf src/*.o
+%: release/%.d64
+	/Applications/C64Debugger.app/Contents/MacOS/C64Debugger -pass -autorundisk -d64 $< 
 
 vendor/cc65:
 	git submodule init
@@ -76,5 +73,10 @@ bin/%.prg: $(SRCDIR)/%.asm
 # %: bin/%.prg
 # 	/Applications/VirtualC64.app/Contents/MacOS/VirtualC64 $<
 
-%: release/%.d64
-	/Applications/C64Debugger.app/Contents/MacOS/C64Debugger -pass -autorundisk -d64 $< 
+
+.PHONY: clean
+clean:
+	-rm -rf bin/*
+	-rm -rf release/*
+	-rm -rf src/*.o
+
