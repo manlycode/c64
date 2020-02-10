@@ -2,3 +2,4 @@
 **/*.sym
 **/*.prg
 **/*.o
+.DS_Store
