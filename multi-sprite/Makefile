@@ -58,7 +58,7 @@ bin/%.prg: $(SRCDIR)/%.asm
     --asm-include-dir $(INC_PATH) \
     --cfg-path $(CFG_PATH) \
     --asm-include-dir $(INC_LIB_PATH) \
-    --lib c64.lib \
+    --lib-path c64.lib \
     -Ln multi-sprite.sym \
     -m multi-sprite.map \
     -L $(LIB_PATH) \

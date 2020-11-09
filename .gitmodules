@@ -13,3 +13,9 @@
 [submodule "first-try/vendor/cc65"]
 	path = first-try/vendor/cc65
 	url = https://github.com/cc65/cc65
+[submodule "multi-sprite/vendor/cc65"]
+	path = multi-sprite/vendor/cc65
+	url = https://github.com/cc65/cc65.git
+[submodule "multi-sprite/cc65"]
+	path = multi-sprite/cc65
+	url = https://github.com/cc65/cc65.git
